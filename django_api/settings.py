@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'principal',
 ]
 
+AUTH_USER_MODEL = 'principal.CustomUser'
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
 #         'rest_framework.authentication.TokenAuthentication',
@@ -90,7 +91,7 @@ WSGI_APPLICATION = 'django_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'analizadorCovidBD',
+        'NAME': 'analizadorCovidBD2',
         'USER': 'postgres',
         'PASSWORD': 'admin',
         'HOST': 'localhost',

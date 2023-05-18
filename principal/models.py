@@ -1,5 +1,17 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+
+
+class CustomUser(AbstractUser):
+    cedula = models.CharField(max_length=12)
+    nombres = models.CharField(max_length=50)
+    apellido_p = models.CharField(max_length=50)
+    apellido_m = models.CharField(max_length=50)
+    email = models.EmailField()
+    rango_usuario = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return f'Usuario {self.id}: {self.username}'
 
 
 class Paciente(models.Model):
@@ -49,7 +61,8 @@ class Diagnostico(models.Model):
 
     id_paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
     img_rad = models.ForeignKey(ImagenRad, on_delete=models.CASCADE)
-    responsable_diagnostico = models.ForeignKey(User, on_delete=models.PROTECT)
+    responsable_diagnostico = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
+
 
     class Meta:
         verbose_name = 'diagnostico'

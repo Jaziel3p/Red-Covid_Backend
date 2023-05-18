@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/create_user/', UserAPI.as_view(), name='create_user'),
     path('principal/', include(('principal.urls', 'principal_urls'))),
-    path('api_generate_token/', views.obtain_auth_token),
+    #path('api_generate_token/', views.obtain_auth_token),
     path('login/', Login.as_view(), name='login'),
     path('logout/', Logout.as_view(), name='logout'),
 ]
