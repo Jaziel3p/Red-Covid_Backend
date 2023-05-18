@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import Paciente, Diagnostico, ImagenRad
 
 class UserSerializer(serializers.Serializer):
     id = serializers.ReadOnlyField()
@@ -29,3 +30,9 @@ class UserSerializer(serializers.Serializer):
             raise serializers.ValidationError("Nombre de Usuario ya existente")
         else:
             return data
+        
+
+class PacienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Paciente
+        fields = '__all__' #invoca todos los campos
