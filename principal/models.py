@@ -37,7 +37,7 @@ class Paciente(models.Model):
         verbose_name_plural = 'pacientes'
 
     def __str__(self):
-        return f'Paciente {self.id}: {self.NSS} {self.nombres} {self.apellido_p} {self.apellido_m}'
+        return f'Paciente {self.id}: {self.NSS} {self.apellido_p} {self.apellido_m} {self.nombres}'
 
 
 
@@ -51,6 +51,8 @@ class ImagenRad(models.Model):
         verbose_name = 'imagen'
         verbose_name_plural = 'imagenes'
 
+    def __str__(self):
+        return f'Imagen de: {self.id_paciente.NSS} {self.id_paciente.apellido_p} {self.id_paciente.apellido_m} {self.id_paciente.nombres}'
 
 
 class Diagnostico(models.Model):

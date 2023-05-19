@@ -38,3 +38,15 @@ class PacienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Paciente
         fields = '__all__' #invoca todos los campos
+
+
+class ImagenRadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImagenRad
+        fields = '__all__'
+
+
+class DiagnosticoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Diagnostico
+        fields = '__all__'

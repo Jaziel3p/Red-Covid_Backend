@@ -1,6 +1,3 @@
-from typing import Any
-from django import http
-from django.shortcuts import render
 from rest_framework import generics
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
@@ -14,11 +11,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 
 from .models import Paciente, Diagnostico, ImagenRad
-from .serializers import PacienteSerializer
+from .serializers import PacienteSerializer, DiagnosticoSerializer, ImagenRadSerializer
 
 
 class PacienteList(generics.ListCreateAPIView):
@@ -26,6 +23,16 @@ class PacienteList(generics.ListCreateAPIView):
     serializer_class = PacienteSerializer
     permission_classes = (IsAuthenticated,)
     authentication_class = (TokenAuthentication,)
+
+
+class DiagnosticoView(viewsets.ModelViewSet):
+    queryset = Diagnostico.objects.all()
+    serializer_class = DiagnosticoSerializer
+
+
+class ImagenRadView(viewsets.ModelViewSet):
+    queryset = ImagenRad.objects.all()
+    serializer_class = ImagenRadSerializer
 
 
 class Login(FormView):
@@ -54,3 +61,4 @@ class Logout(APIView):
         request.user.auth_token.delete()
         logout(request)
         return Response(status=status.HTTP_200_OK)
+    
