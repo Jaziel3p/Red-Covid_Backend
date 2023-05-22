@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Diagnostico</title>
+</head>
+
+<body>
+    <h1>Reporte de Diagnostico</h1>
+
+    <h2>Datos del paciente</h2>
+    <h3>Nombre del paciente: {{paciente.nombres}} {{paciente.apellido_p}} {{paciente.apellido_m}}</h3>
+
+    <h3>Número de Seguro Social: {{paciente.NSS}}</h3>
+    <h3>Fecha de naciemiento: {{paciente.fecha_nacimiento}}</h3>
+    <h3>Tipo de sangre: {{paciente.tipo_sangre}}</h3>
+    <h3>Peso: {{paciente.peso}}</h3>
+    <h3>Altura: {{paciente.altura}}</h3>
+    <h3>Sexo: {{paciente.sexo}}</h3>
+    <h3>Edad: {{paciente.edad}}</h3>
+    <h3>Enfermedades: {{paciente.enfermedades}}</h3>
+    <br>
+
+    <h2>Datos de Diagnostico</h2>
+    <h3>Resultado del diagnostico: {{diagnostico.resultado_diagnostico}}</h3>
+    <h3>Fecha de diagnostico: {{diagnostico.fecha_diagnostico}}</h3>
+    <h3>Responsabel de diagnostico: {{diagnostico.responsable_diagnostico}}</h3>
+</body>
+
+</html>
