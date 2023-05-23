@@ -22,6 +22,7 @@ from .models import Paciente
 from .serializers import PacienteSerializer, DiagnosticoSerializer, ImagenRadSerializer
 from django.middleware.csrf import CsrfViewMiddleware
 from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework.decorators import api_view, permission_classes
 
 
 
@@ -76,10 +77,18 @@ class Login(FormView):
         if token:
             login(self.request, form.get_user())
             return super(Login, self).form_valid(form)
+
+class Username(APIView):
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request, format=None):
+        username = request.user.username
+        # Realiza alguna acción con el nombre de usuario
+        return Response({'username': username})   
         
 
 class Logout(APIView):
-    @ensure_csrf_cookie
+    
     def get(self, request, format=None):
         if request.user.is_authenticated:
             # Verificar si el usuario tiene un token de autenticación
