@@ -1,6 +1,7 @@
 from rest_framework import generics
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.generic.edit import FormView
@@ -13,6 +14,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
 from rest_framework import status, viewsets
 from rest_framework.response import Response
+from django.template.loader import get_template
+from weasyprint import CSS, HTML
 
 from .models import Paciente, Diagnostico, ImagenRad
 from .models import Paciente
@@ -89,3 +92,20 @@ class Logout(APIView):
         
         return Response(status=status.HTTP_200_OK)
     
+
+class ReportePDF(View):
+    def get(self, request, id_paciente, *args, **kwargs):
+        paciente = Paciente.objects.get(id=id_paciente)
+        diagnostico = Diagnostico.objects.get(id=id_paciente)
+
+        data = {
+            'paciente': paciente,
+            'diagnostico': diagnostico,
+        }
+
+        template = get_template("ReportePDF.html")
+        html = template.render(data)
+        #css_url
+        pdf = HTML(string=html).write_pdf()
+
+        return HttpResponse(pdf, content_type='application/pdf')
