@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
 ]
 
 ROOT_URLCONF = 'django_api.urls'
@@ -93,7 +94,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'analizadorCovidBD2',
         'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'PASSWORD': 'holaktalA1',
         'HOST': 'localhost',
         'PORT': '5432'
     }

@@ -15,7 +15,10 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 
 from .models import Paciente, Diagnostico, ImagenRad
+from .models import Paciente
 from .serializers import PacienteSerializer, DiagnosticoSerializer, ImagenRadSerializer
+from django.middleware.csrf import CsrfViewMiddleware
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 
@@ -73,8 +76,16 @@ class Login(FormView):
         
 
 class Logout(APIView):
-    def get(self, request, format = None):
-        request.user.auth_token.delete()
+    @ensure_csrf_cookie
+    def get(self, request, format=None):
+        if request.user.is_authenticated:
+            # Verificar si el usuario tiene un token de autenticación
+            if hasattr(request.user, 'auth_token'):
+                # Eliminar el token de autenticación
+                Token.objects.filter(user=request.user).delete()
+        
+        # Cerrar la sesión del usuario
         logout(request)
+        
         return Response(status=status.HTTP_200_OK)
     
