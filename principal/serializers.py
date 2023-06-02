@@ -35,9 +35,11 @@ class UserSerializer(serializers.Serializer):
         
 
 class PacienteSerializer(serializers.ModelSerializer):
+    diagnosticado = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = Paciente
-        fields = '__all__' #invoca todos los campos
+        fields = '__all__'
 
 
 class ImagenRadSerializer(serializers.ModelSerializer):

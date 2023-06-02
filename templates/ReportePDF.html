@@ -16,17 +16,24 @@
     <h3>Número de Seguro Social: {{paciente.NSS}}</h3>
     <h3>Fecha de naciemiento: {{paciente.fecha_nacimiento}}</h3>
     <h3>Tipo de sangre: {{paciente.tipo_sangre}}</h3>
-    <h3>Peso: {{paciente.peso}}</h3>
-    <h3>Altura: {{paciente.altura}}</h3>
+    <h3>Peso: {{paciente.peso}} kg</h3>
+    <h3>Altura: {{paciente.altura}} m</h3>
     <h3>Sexo: {{paciente.sexo}}</h3>
-    <h3>Edad: {{paciente.edad}}</h3>
+    <h3>Edad: {{paciente.edad}} años</h3>
     <h3>Enfermedades: {{paciente.enfermedades}}</h3>
     <br>
 
     <h2>Datos de Diagnostico</h2>
+    {% for diagnostico in diagnosticos %}
+    <h3>Diagnóstico {{ forloop.counter }}</h3>
     <h3>Resultado del diagnostico: {{diagnostico.resultado_diagnostico}}</h3>
+    <h3>Porcentaje de COVID-19: {{diagnostico.probabilidad_covid}}</h3>
     <h3>Fecha de diagnostico: {{diagnostico.fecha_diagnostico}}</h3>
-    <h3>Responsabel de diagnostico: {{diagnostico.responsable_diagnostico}}</h3>
+    <h3>Responsable de diagnostico: {{diagnostico.responsable_diagnostico}}</h3>
+    {% if diagnostico.imagen %}
+    <img src="{{ imagen_urls }}" alt="{{ imagen_url }}">
+    {% endif %}
+    {% endfor %}
 </body>
 
 </html>

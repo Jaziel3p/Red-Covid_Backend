@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="{{CSS_url}}">
+  </head>
+<body >
+  <div class="table-container">
+  <table>
+    <tr>
+      <td colspan="2" class="td img">
+        <img src="{{ logo_url}}" alt="SEP">
+      </td>
+      <td colspan="4" style="text-align: center;"><strong> Sistema de detección de COVID-19 en imagenes radiológicas mediante IA</strong> <br>
+        <strong></strong> <br>
+          <strong>EXPEDIENTE COVITA </strong></td> 
+      <td colspan="2" style="text-align: right;">
+        <img src="{{ LogoITA }}" alt="{{ ITA_url }}">
+      </td>
+    </tr>
+  </table>
+  <div>
+    
+    <table>
+  <thead >
+      <tr>
+    <td colspan="7" > Nombre del paciente:<strong> {{paciente.nombres}} {{paciente.apellido_p}} {{paciente.apellido_m}}</strong> </td>
+    <td style="margin: auto; font-size: 0.35cm; width: 4cm;">Fecha de naciemiento: <br> <strong>{{paciente.fecha_nacimiento}}</strong></td>
+  </tr>
+  <tr>
+    <td colspan="2" > Número de Seguro Social: <br><strong> {{paciente.NSS}}</strong></td>
+    <td >Tipo de sangre: <strong>{{paciente.tipo_sangre}}</strong> </td>
+    <td>Peso: <br> <strong> {{paciente.peso}} kg </strong></td>
+    <td>Altura: <br><strong>{{paciente.altura}} m</strong> </td>
+    <td>Sexo: <br><strong>{{paciente.sexo}}</strong> </td>
+    <td>Edad: <br><strong>{{paciente.edad}} años</strong></td>
+    <td>Enfermedades: <br><strong>{{paciente.enfermedades}}</strong> </td>
+  </tr>
+  <tr>
+    <td colspan="8" style="text-align: center; font-size: 150%;"><strong>  Datos de Diagnostico</strong> </td>
+  </tr>
+<tr class="grey-background">
+    <td style=" text-align: center;">Diagnóstico</td>
+    <td style=" text-align: center;">Resultado del diagnostico </td>
+    <td style="text-align: center;" >Porcentaje de COVID-19</td>
+    <td style=" text-align: center;">Fecha de diagnostico</td>
+    <td style=" text-align: center;">Responsable de diagnostico </td>
+    <!-- <td style=" text-align: center;">Nota medica </td> -->
+    <td style=" text-align: center;" colspan="3">Muestra capturada </td>
+  </tr>
+  </thead>
+  
+  </div>
+  <tbody class="tbBorde">
+    <!-- iteracion para la creacion del indice -->
+    
+    {% for diagnostico in diagnosticos %}
+<tr style="font-size: 10pt; page-break-inside: avoid;">
+  <!-- realizar la vista entre tutorado y horas -->
+  <td style="width: 0cm; text-align: center;">{{ forloop.counter }}</td>
+  <td style="width: auto; text-align: center;">{{diagnostico.resultado_diagnostico}}</td>
+  <td style="width: auto; text-align: center;">{{diagnostico.probabilidad_covid}}%</td>
+  <td style="width: auto; text-align: center;">{{diagnostico.fecha_diagnostico}}</td>
+  <td style="width: auto; text-align: center;">{{diagnostico.responsable_diagnostico}}</td>
+  <!-- <td style="width: auto; text-align: center;">{{diagnostico.nota}}</td> -->
+  {% if diagnostico.imagen %}
+  <td colspan="3" style="width: auto; text-align: center;"><img style="height: 100pt; width: auto;" src="{{ diagnostico.imagen_url}}" alt="{{ diagnostico.imagen_url }}"></td>
+  {% endif %}
+</tr>
+<tr  style="border: 0.02cm solid black;">
+  <td style="background-color: #e0dcdc;" >Nota medica: </td>
+  <td colspan="7"> {{diagnostico.nota}}</td>
+</tr>
+{% endfor %}
+    
+  </tbody>
+  <tfoot>
+  
+    <tr class="grey-background" style="border: 0.02cm solid black;">
+        <td colspan="2">Contacto del paciente: </td>
+        <td colspan="3">Correo: {{paciente.correo_e}}</td>
+        <td colspan="3">Telefono: {{paciente.telefono}}</td>
+    </tr>
+  </tfoot>
+  
+  
+</html>

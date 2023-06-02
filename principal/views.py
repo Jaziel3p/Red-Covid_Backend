@@ -15,14 +15,27 @@ from rest_framework.views import APIView
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from django.template.loader import get_template
-from weasyprint import CSS, HTML
-
-from .models import Paciente, Diagnostico, ImagenRad
-from .models import Paciente
-from .serializers import PacienteSerializer, DiagnosticoSerializer, ImagenRadSerializer
+from weasyprint import CSS, HTML  
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import Paciente, Diagnostico, ImagenRad, CustomUser
+from .serializers import PacienteSerializer, DiagnosticoSerializer, ImagenRadSerializer, UserSerializer
 from django.middleware.csrf import CsrfViewMiddleware
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
+from pathlib import Path
+
+import os
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import numpy as np
+from keras.models import load_model
+import keras.models
+from PIL import Image
+
+
 
 
 
@@ -38,24 +51,94 @@ class LimitedGroupGetModelPermissions(DjangoModelPermissions): #Clase personaliz
 
 
 class PacienteList(generics.ListCreateAPIView):
-    queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
-    permission_classes = (IsAuthenticated, DjangoModelPermissions)
-    authentication_class = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get_queryset(self):
+        # Filtrar los pacientes por usuario actual
+        user = self.request.user.id
+        queryset = Paciente.objects.all()
+        # if(user == 1):
+        #     queryset = Paciente.objects.all()
+        # else:
+        #     queryset = Paciente.objects.filter(usuario=user)
+        
+        return queryset
+    
+class UserRegistrationAPIView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class RangoUsuarioView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, request, format=None):
+        user = request.user
+        rango_usuario = user.rango_usuario
+        return Response({'rango_usuario': rango_usuario})
 
 
-class DiagnosticoView(viewsets.ModelViewSet):
-    queryset = Diagnostico.objects.all()
-    serializer_class = DiagnosticoSerializer
-    permission_classes = (IsAuthenticated, LimitedGroupGetModelPermissions)
-    authentication_class = (TokenAuthentication,)
+from principal.models import Paciente
 
+class DiagnosticoAPIView(APIView):
+    def post(self, request):
+        probabilidad_covid = request.data.get('probabilidad_covid')
+        nota_med = request.data.get('nota')
+        id_paciente = request.data.get('id_paciente')
+        responsable_diagnostico_id = request.data.get('responsable_diagnostico_id')  # Agregado
+        
+        resultado_diagnostico = 'P' if probabilidad_covid > 60.0 else 'N'
+        
+        try:
+            ultimo_id_imagen_rad = ImagenRad.objects.latest('id').id
+        except ImagenRad.DoesNotExist:
+            ultimo_id_imagen_rad = 0
+        
+        paciente = Paciente.objects.get(id=id_paciente)
+        paciente.diagnosticado = True  # Actualizar el campo diagnosticado a True
+        paciente.save()
+        
+        diagnostico = Diagnostico.objects.create(
+            resultado_diagnostico=resultado_diagnostico,
+            img_rad_id=ultimo_id_imagen_rad,
+            nota = nota_med,
+            id_paciente=paciente,
+            probabilidad_covid=probabilidad_covid,
+            responsable_diagnostico_id=responsable_diagnostico_id  # Agregado
+        )
+        
+        return Response({'message': 'Diagnostico creado correctamente'}, status=status.HTTP_201_CREATED)
+
+
+
+class PacienteRegistroAPIView(APIView):
+    def post(self, request):
+        serializer = PacienteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DeletePacienteView(APIView):
+    def delete(self, request, paciente_id):
+        try:
+            paciente = Paciente.objects.get(id=paciente_id)
+            paciente.delete()
+            return Response({"message": "Paciente eliminado correctamente"}, status=status.HTTP_204_NO_CONTENT)
+        except Paciente.DoesNotExist:
+            return Response({"message": "El paciente no existe"}, status=status.HTTP_404_NOT_FOUND)
 
 class ImagenRadView(viewsets.ModelViewSet):
     queryset = ImagenRad.objects.all()
     serializer_class = ImagenRadSerializer
     permission_classes = (IsAuthenticated, DjangoModelPermissions)
-    authentication_class = (TokenAuthentication,)
+    authentication_class = (TokenAuthentication)
 
 
 class Login(FormView):
@@ -100,21 +183,89 @@ class Logout(APIView):
         logout(request)
         
         return Response(status=status.HTTP_200_OK)
-    
+
+
+
+
+
+from .models import Paciente, ImagenRad
 
 class ReportePDF(View):
     def get(self, request, id_paciente, *args, **kwargs):
-        paciente = Paciente.objects.get(id=id_paciente)
-        diagnostico = Diagnostico.objects.get(id=id_paciente)
+        try:
+            paciente = Paciente.objects.get(id=id_paciente)
+            diagnosticos = Diagnostico.objects.filter(id_paciente=id_paciente)
+        except Paciente.DoesNotExist:
+            return HttpResponse("Paciente no encontrado.")
+        except Diagnostico.DoesNotExist:
+            return HttpResponse("Diagnóstico no encontrado.")
 
+        for diagnostico in diagnosticos:
+            diagnostico.imagen = ImagenRad.objects.get(id=diagnostico.img_rad_id)
+            # diagnostico.imagen_url = request.build_absolute_uri(Path(settings.BASE_DIR) /'.'/ diagnostico.imagen.imagen.path)
+            imagen_url = Path(settings.BASE_DIR) /'.'/ diagnostico.imagen.imagen.path
+            diagnostico.imagen_url = imagen_url.as_uri()
+            css_url = './templates/estilos.css'
+            LOGOCOVITA = Path(settings.BASE_DIR) /'.'/'templates'/'SVG'/'Mesa de trabajo 1svg.svg'
+            LOGOITA = Path(settings.BASE_DIR) /'.'/'templates'/'ITA.png'
         data = {
             'paciente': paciente,
-            'diagnostico': diagnostico,
+            'diagnosticos': diagnosticos,
+            'logo_url':LOGOCOVITA.as_uri(),
+            'LogoITA':LOGOITA.as_uri(),
+            
         }
 
-        template = get_template("ReportePDF.html")
+        template = get_template("Reporte.html")
         html = template.render(data)
-        #css_url
-        pdf = HTML(string=html).write_pdf()
 
-        return HttpResponse(pdf, content_type='application/pdf')
+        pdf = HTML(string=html).write_pdf(stylesheets=[CSS(filename=css_url)])
+
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = 'filename="reporte.pdf"'
+
+        return response
+
+    
+#ANALIZAR IMAGEN
+class ImageUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, format=None):
+        paciente_id = request.data.get('id_paciente')
+        file_obj = request.FILES['image']
+
+        # Guardar el archivo en el sistema de archivos
+        file_path = os.path.join(settings.MEDIA_ROOT, file_obj.name)
+        with open(file_path, 'wb+') as destination:
+            for chunk in file_obj.chunks():
+                destination.write(chunk)
+
+        # Crear una instancia de ImagenRad y guardarla en la base de datos
+        imagen_rad = ImagenRad.objects.create(imagen=file_obj, id_paciente_id=paciente_id)
+
+        # Analizar la imagen cargada
+        probability = self.analyze_image(file_path)
+
+        # Eliminar el archivo del sistema de archivos
+        os.remove(file_path)
+
+        probability = round(probability, 4)  # Redondear a cuatro dígitos después del punto decimal
+        return Response({'probability': probability}, status=status.HTTP_200_OK)
+
+    def analyze_image(self, image_path):
+        # Cargar el modelo
+        model_path = os.path.join(settings.BASE_DIR, 'covid_classifier_model.h5')
+        model = load_model(model_path)
+
+        # Preprocesamiento de imagen
+        img = image.load_img(image_path, target_size=(200, 200))
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)
+        img_array = img_array / 255.0  # Normalización de píxeles
+
+        # Realizar predicción
+        prediction = model.predict(img_array)
+        probability = prediction[0][0] * 100
+
+        return probability
